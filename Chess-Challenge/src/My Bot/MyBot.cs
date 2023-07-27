@@ -53,44 +53,6 @@ public class MyBot : IChessBot
         return score;
     }
 
-    private (Move, double) Black(Board board, Timer timer, int depth)
-    {
-        if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
-        double worstScore = double.MaxValue;
-        Move worstMove = Move.NullMove;
-        foreach (Move legalMove in board.GetLegalMoves())
-        {
-            board.MakeMove(legalMove);
-            double bestScore = White(board, timer, depth - 1).Item2;
-            if (bestScore <= worstScore)
-            {
-                worstScore = bestScore;
-                worstMove = legalMove; 
-            } 
-            board.UndoMove(legalMove);
-        }
-        return (worstMove, worstScore);
-    }
-
-    private (Move, double) White(Board board, Timer timer, int depth)
-    {
-        if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
-        double bestScore = double.MinValue;
-        Move bestMove = Move.NullMove;
-        foreach (Move legalMove in board.GetLegalMoves())
-        {
-            board.MakeMove(legalMove);
-            double worstScore = Black(board, timer, depth - 1).Item2;
-            if (worstScore >= bestScore)
-            {
-                bestScore = worstScore;
-                bestMove = legalMove; 
-            } 
-            board.UndoMove(legalMove);
-        }
-        return (bestMove, bestScore);
-    }
-
     private (Move, double) Minimax(Board board, Timer timer, int depth)
     {
         if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
