@@ -29,7 +29,28 @@ public class MyBot : IChessBot
     ///</returns>
     private static double AnalyzeBoard(Board board)
     {
-        return 1;
+        double[] evals = {PieceCountHeuristic(board)};
+        return evals[0];
+    }
+
+    private static double PieceCountHeuristic(Board board)
+    {
+        double score = 0;
+        foreach (PieceList pl in board.GetAllPieceLists())
+        {
+            foreach (Piece piece in pl)
+            {
+                 score += piece.PieceType switch {
+                    PieceType.Pawn => 1,
+                    PieceType.Knight => 3,
+                    PieceType.Bishop => 3.5,
+                    PieceType.Rook => 5,
+                    PieceType.Queen => 9,
+                    _ => 0
+                } * (piece.IsWhite ? 1 : -1);
+            }
+        }
+        return score;
     }
 
     private (Move, double) Black(Board board, Timer timer, int depth)
