@@ -1,4 +1,5 @@
-﻿using ChessChallenge.API;
+﻿using System;
+using ChessChallenge.API;
 
 public class MyBot : IChessBot
 {
@@ -14,7 +15,7 @@ public class MyBot : IChessBot
     }
     public Move Think(Board board, Timer timer)
     {
-        return board.IsWhiteToMove ? White(board, timer, 5) : Black(board, timer, 5);
+        return board.IsWhiteToMove ? White(board, timer, 1).Item1 : Black(board, timer, 1).Item1;
     }
 
     /// <summary>
@@ -28,16 +29,46 @@ public class MyBot : IChessBot
     ///</returns>
     private static double AnalyzeBoard(Board board)
     {
-        return 0;
+        return 1;
     }
 
-    private Move Black(Board board, Timer timer, int depth)
+    private (Move, double) Black(Board board, Timer timer, int depth)
     {
-        return White(board, timer, depth - 1);
+        if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
+        double worstScore = double.MaxValue;
+        Move worstMove = Move.NullMove;
+        foreach (Move legalMove in board.GetLegalMoves())
+        {
+            board.MakeMove(legalMove);
+            double bestScore = White(board, timer, depth - 1).Item2;
+            if (bestScore <= worstScore)
+            {
+                worstScore = bestScore;
+                worstMove = legalMove; 
+            } 
+            board.UndoMove(legalMove);
+            Console.WriteLine(new string('?', 10 - depth) + "      " + worstMove + "");
+        }
+        return (worstMove, worstScore);
     }
 
-    private Move White(Board board, Timer timer, int depth)
+    private (Move, double) White(Board board, Timer timer, int depth)
     {
-        return GetRandomMove(board);
+        if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
+        double bestScore = double.MinValue;
+        Move bestMove = Move.NullMove;
+        foreach (Move legalMove in board.GetLegalMoves())
+        {
+            board.MakeMove(legalMove);
+            double worstScore = Black(board, timer, depth - 1).Item2;
+            if (worstScore >= bestScore)
+            {
+                bestScore = worstScore;
+                bestMove = legalMove; 
+            } 
+            board.UndoMove(legalMove);
+            Console.WriteLine(new string('?', 10 - depth) + "      " + bestMove + "");
+        }
+        return (bestMove, bestScore);
     }
 }
