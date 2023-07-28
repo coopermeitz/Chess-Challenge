@@ -15,7 +15,7 @@ public class MyBot : IChessBot
     }
     public Move Think(Board board, Timer timer)
     {
-        return Minimax(board, timer, 5).Item1;
+        return Minimax(board, timer, 5, double.MinValue, double.MaxValue).Item1;
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public class MyBot : IChessBot
         return score;
     }
 
-    private (Move, double) Minimax(Board board, Timer timer, int depth)
+    private (Move, double) Minimax(Board board, Timer timer, int depth, double alpha, double beta)
     {
         if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
         double bestScore = double.MinValue;
@@ -61,13 +61,18 @@ public class MyBot : IChessBot
         foreach (Move legalMove in board.GetLegalMoves())
         {
             board.MakeMove(legalMove);
-            double bestEnemyScore = Minimax(board, timer, depth - 1).Item2 * (board.IsWhiteToMove ? 1 : -1);
+            double bestEnemyScore = Minimax(board, timer, depth - 1, alpha, beta).Item2;
+            board.UndoMove(legalMove);
+            if (board.IsWhiteToMove && bestEnemyScore > beta) break;
+            if (!board.IsWhiteToMove && bestEnemyScore < alpha) break;
+            if (board.IsWhiteToMove && bestEnemyScore < beta) beta = bestEnemyScore;
+            if (!board.IsWhiteToMove && bestEnemyScore > alpha) alpha = bestEnemyScore;
+            bestEnemyScore *= board.IsWhiteToMove ? 1 : -1;
             if (bestEnemyScore >= bestScore)
             {
                 bestScore = bestEnemyScore;
                 bestMove = legalMove; 
-            } 
-            board.UndoMove(legalMove);
+            }
         }
         return (bestMove, bestScore);
     }
