@@ -3,6 +3,8 @@ using ChessChallenge.API;
 
 public class MyBot : IChessBot
 {
+
+    private const int StopThinkingMilliseconds = 250;
     /// <summary>
     /// Returns a random move.
     /// </summary>
@@ -15,7 +17,8 @@ public class MyBot : IChessBot
     }
     public Move Think(Board board, Timer timer)
     {
-        return Minimax(board, timer, 5, double.MinValue, double.MaxValue).Item1;
+        Move bestMove = Minimax(board, timer, 5, double.MinValue, double.MaxValue).Item1;
+        return bestMove != Move.NullMove ? bestMove : GetRandomMove(board); 
     }
 
     /// <summary>
@@ -55,7 +58,7 @@ public class MyBot : IChessBot
 
     private (Move, double) Minimax(Board board, Timer timer, int depth, double alpha, double beta)
     {
-        if (depth == 0) return (Move.NullMove, AnalyzeBoard(board));
+        if (depth == 0 || timer.MillisecondsRemaining <= StopThinkingMilliseconds) return (Move.NullMove, AnalyzeBoard(board));
         double bestScore = double.MinValue;
         Move bestMove = Move.NullMove;
         foreach (Move legalMove in board.GetLegalMoves())
